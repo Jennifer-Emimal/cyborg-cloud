@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 import threading
 import time
+import requests
 
 app = FastAPI()
 
@@ -43,15 +44,16 @@ def result(job_id: str):
 # ---------------------------
 
 def analyze_target(target):
-    # FAKE sandbox behaviour (temporary)
-    time.sleep(5)  # simulate execution time
+    try:
+        response = requests.post(
+            "http://sandbox-worker:5000/analyze",
+            json={"target": target},
+            timeout=30
+        )
+        return response.json().get("verdict", "error")
+    except:
+        return "error"
 
-    if "virus" in target.lower():
-        return "malicious"
-    elif "unknown" in target.lower():
-        return "suspicious"
-    else:
-        return "safe"
 
 
 def worker():
